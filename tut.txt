@@ -9,7 +9,27 @@ git remote add origin git@github.com:diro2025/qapp2.git
 #######
 List of needed files for App
 ------------------
-pip install -r requirements.txt
+
 uv venv
 source .venv/bin/activate
-..
+
+pip install -r requirements.txt
+
+create .env file
+create app/db.py
+create app/models.py
+create app/main.py
+create app/routers/pages.py
+create app/routers/api_quiz.py
+create app/routers/upload.py
+create app/templates/base.html
+create app/templates/index.html
+create app/templates/quiz.html
+create app/templates/upload.html
+
+# to run the app
+uv run uvicorn app.main:app --reload
+
+create app/__init__.py
+mkdir -p app/static
+create app/routers/pages.py

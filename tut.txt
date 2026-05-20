@@ -1,0 +1,14 @@
+
+##################
+touch README.md
+git add README.md
+git commit -m "first comment"
+git branch -M main
+git remote add origin git@github.com:diro2025/qapp2.git
+
+#######
+List of needed files for App
+------------------
+pip install -r requirements.txt
+uv venv
+source .venv/bin/activate

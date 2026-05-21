@@ -15,3 +15,11 @@ class QuizQuestion(Base):
     choice_e = Column(Text, nullable=False)
     correct_answer = Column(String(1), nullable=False)
     explaination = Column(Text, nullable=True)
+
+    @property
+    def explanation(self) -> str | None:
+        """Compatibility property: some code expects `explanation` spelling.
+        The DB column is spelled `explaination`; expose the correctly
+        spelled alias to avoid changing the database schema.
+        """
+        return self.explaination

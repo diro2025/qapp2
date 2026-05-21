@@ -3,26 +3,28 @@
 {% block content %}
 <div x-data="quizApp()" x-init="init()" class="bg-white shadow rounded-xl p-6">
     <h1 class="text-3xl font-bold mb-6">Quiz Time</h1>
-
+    
     <template x-if="loading">
-        <p class="text-slate-600">Loading...</p>
+        <p class="text-slate-600">Loading questions...</p>
     </template>
 
     <template x-if="!loading && questions.length === 0">
-        <p class="text-slate-600">No questions found. Please go back and select valid chapter(s).</p>
+        <div class="bg-red-100 text-red-800 p-4 rounded-lg">
+            No questions found. Please go back and select valid chapter(s).
+        </div>
     </template>
 
     <template x-if="!loading && questions.length > 0 && currentIndex < questions.length">
         <div>
             <div class="flex justify-between items-center mb-3">
-                <p class="font-medium text-slate-600">
+                <p class="text-sm text-slate-600">
                     Question <span x-text="currentIndex + 1"></span> of <span x-text="questions.length"></span>
                 </p>
                 <p class="text-sm font-semibold text-green-700">
                     Correct: <span x-text="correctCount"></span>
                 </p>
             </div>
-
+            
             <div class="w-full bg-slate-200 rounded-full h-3 mb-6">
                 <div class="bg-blue-600 h-3 rounded-full transition-all duration-300"
                      :style="`width: ${((currentIndex + 1) / questions.length) * 100}%`">
@@ -32,17 +34,19 @@
             <div class="mb-2 text-sm text-slate-500">
                 Chapter: <span x-text="currentQuestion.chapter"></span>
             </div>
-
+            
             <h2 class="text-xl font-semibold mb-5" x-text="currentQuestion.question"></h2>
 
             <div class="space-y-3">
-                <template x-for="(value, key) in currentQuestion.choices" :key="key">
-                    <button @click="submitAnswer(key)"
-                            :disabled="answered"
-                            class="w-full text-left border rounded-lg p-3 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
-                        <span class="font-semibold" x-text="key + '. '"></span>
-                        <span x-text="value"></span>
-                    </button>
+                <template x-for="[key, value] in Object.entries(currentQuestion.choices)" :key="key">
+                    <template x-if="value">
+                        <button @click="submitAnswer(key)"
+                                :disabled="answered"
+                                class="w-full text-left border rounded-lg p-3 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
+                            <span class="font-semibold" x-text="key + '. '"></span>
+                            <span x-text="value"></span>
+                        </button>
+                    </template>
                 </template>
             </div>
 
@@ -58,23 +62,25 @@
                         </p>
                     </template>
                     
-                    <template x-if="currentQuestion.explaination">
-                        <p class="mt-2 text-sm" x-text="currentQuestion.explaination"></p>
+                    <template x-if="currentQuestion.explanation">
+                        <p class="mt-2 text-sm" x-text="currentQuestion.explanation"></p>
                     </template>
                 </div>
             </template>
 
-            <button x-show="answered"
-                    @click="nextQuestion()"
-                    class="mt-6 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700">
-                Next Question
-            </button>
+            <div class="mt-6">
+                <button x-show="answered"
+                        @click="nextQuestion()"
+                        class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700">
+                    Next Question
+                </button>
+            </div>
         </div>
     </template>
 
     <template x-if="!loading && questions.length > 0 && currentIndex >= questions.length">
         <div class="text-center py-10">
-            <h2 class="text-2xl font-bold mb-4">Quiz Complete!</h2>
+            <h2 class="text-3xl font-bold mb-4">Quiz Complete</h2>
             <p class="text-lg mb-6">
                 You answered 
                 <span class="font-bold text-green-700" x-text="correctCount"></span> 
@@ -154,7 +160,6 @@ function quizApp() {
             };
         },
 
-        // Logically completed based on your variables
         submitAnswer(answer) {
             if (this.answered) return;
             this.answered = true;
@@ -168,7 +173,6 @@ function quizApp() {
             }
         },
 
-        // Logically completed to reset state for the next question
         nextQuestion() {
             this.currentIndex++;
             this.answered = false;

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div x-data="quizApp()" x-init="init()" class="bg-white shadow rounded-xl p-6">
+    <h1 class="text-3xl font-bold mb-6">Quiz Time</h1>
+
+    <template x-if="loading">
+        <p class="text-slate-600">Loading...</p>
+    </template>
+
+    <template x-if="!loading && questions.length === 0">
+        <p class="text-slate-600">No questions found. Please go back and select valid chapter(s).</p>
+    </template>
+
+    <template x-if="!loading && questions.length > 0 && currentIndex < questions.length">
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <p class="font-medium text-slate-600">
+                    Question <span x-text="currentIndex + 1"></span> of <span x-text="questions.length"></span>
+                </p>
+                <p class="text-sm font-semibold text-green-700">
+                    Correct: <span x-text="correctCount"></span>
+                </p>
+            </div>
+
+            <div class="w-full bg-slate-200 rounded-full h-3 mb-6">
+                <div class="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                     :style="`width: ${((currentIndex + 1) / questions.length) * 100}%`">
+                </div>
+            </div>
+
+            <div class="mb-2 text-sm text-slate-500">
+                Chapter: <span x-text="currentQuestion.chapter"></span>
+            </div>
+
+            <h2 class="text-xl font-semibold mb-5" x-text="currentQuestion.question"></h2>
+
+            <div class="space-y-3">
+                <template x-for="(value, key) in currentQuestion.choices" :key="key">
+                    <button @click="submitAnswer(key)"
+                            :disabled="answered"
+                            class="w-full text-left border rounded-lg p-3 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
+                        <span class="font-semibold" x-text="key + '. '"></span>
+                        <span x-text="value"></span>
+                    </button>
+                </template>
+            </div>
+
+            <template x-if="feedback">
+                <div class="mt-5 p-4 rounded-lg"
+                     :class="isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    <p class="font-semibold" x-text="feedback"></p>
+                    
+                    <template x-if="!isCorrect">
+                        <p class="mt-2">
+                            Correct answer: 
+                            <span class="font-bold" x-text="currentQuestion.correct_answer"></span>
+                        </p>
+                    </template>
+                    
+                    <template x-if="currentQuestion.explaination">
+                        <p class="mt-2 text-sm" x-text="currentQuestion.explaination"></p>
+                    </template>
+                </div>
+            </template>
+
+            <button x-show="answered"
+                    @click="nextQuestion()"
+                    class="mt-6 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700">
+                Next Question
+            </button>
+        </div>
+    </template>
+
+    <template x-if="!loading && questions.length > 0 && currentIndex >= questions.length">
+        <div class="text-center py-10">
+            <h2 class="text-2xl font-bold mb-4">Quiz Complete!</h2>
+            <p class="text-lg mb-6">
+                You answered 
+                <span class="font-bold text-green-700" x-text="correctCount"></span> 
+                out of 
+                <span class="font-bold" x-text="questions.length"></span> 
+                correctly.
+            </p>
+            <a href="/" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700">
+                Back to Home
+            </a>
+        </div>
+    </template>
+</div>
+
+<script>
+function quizApp() {
+    return {
+        loading: true,
+        questions: [],
+        currentIndex: 0,
+        correctCount: 0,
+        feedback: "",
+        isCorrect: false,
+        answered: false,
+
+        get currentQuestion() {
+            return this.questions[this.currentIndex] || {};
+        },
+
+        async init() {
+            const params = new URLSearchParams(window.location.search);
+            const chapters = params.getAll("chapters");
+            const randomize = params.get("randomize") === "true";
+            const courseNum = params.get("course_num");
+
+            const query = new URLSearchParams();
+            chapters.forEach(ch => query.append("chapters", ch));
+            
+            if (courseNum) {
+                query.append("course_nums", courseNum);
+            }
+            query.append("randomize", randomize);
+
+            const response = await fetch(`/api/questions?${query.toString()}`);
+            const rawQuestions = await response.json();
+            
+            this.questions = rawQuestions.map(q => this.shuffleChoices(q));
+            this.loading = false;
+        },
+
+        shuffleChoices(question) {
+            const entries = Object.entries(question.choices)
+                .filter(([_, value]) => value);
+            
+            const correctText = question.choices[question.correct_answer];
+
+            for (let i = entries.length - 1; i > 0; i -= 1) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [entries[i], entries[j]] = [entries[j], entries[i]];
+            }
+
+            const shuffledChoices = {};
+            let correctAnswer = question.correct_answer;
+            
+            entries.forEach(([key, value], index) => {
+                const label = String.fromCharCode(65 + index);
+                shuffledChoices[label] = value;
+                if (value === correctText && key === question.correct_answer) {
+                    correctAnswer = label;
+                }
+            });
+
+            return {
+                ...question,
+                choices: shuffledChoices,
+                correct_answer: correctAnswer,
+            };
+        },
+
+        // Logically completed based on your variables
+        submitAnswer(answer) {
+            if (this.answered) return;
+            this.answered = true;
+            this.isCorrect = (answer === this.currentQuestion.correct_answer);
+            
+            if (this.isCorrect) {
+                this.correctCount++;
+                this.feedback = "Correct!";
+            } else {
+                this.feedback = "Incorrect.";
+            }
+        },
+
+        // Logically completed to reset state for the next question
+        nextQuestion() {
+            this.currentIndex++;
+            this.answered = false;
+            this.feedback = "";
+            this.isCorrect = false;
+        }
+    };
+}
+</script>
+{% endblock %}

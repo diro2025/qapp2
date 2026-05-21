@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+    <nav class="bg-blue-700 text-white">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-6">
+            <a href="/" class="text-xl font-bold">Quiz App</a>
+            <a href="/" class="hover:underline">Home</a>
+            <a href="/upload" class="hover:underline">Upload CSV</a>
+        </div>
+    </nav>
+    <main class="max-w-5xl mx-auto p-6">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

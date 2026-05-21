@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white shadow rounded-xl p-6">
+    <h1 class="text-3xl font-bold mb-2">Welcome to the Quiz App</h1>
+    <p class="text-slate-600 mb-6">
+        Choose a course, then pick one or more chapters to study.
+    </p>
+
+    <form action="/quiz" method="get" class="space-y-6">
+        <div>
+            <h2 class="text-lg font-semibold mb-3">Select Course</h2>
+            {% if courses %}
+            <select
+                id="course-select"
+                name="course_num"
+                class="w-full border rounded-lg p-3 bg-white"
+                required
+            >
+                <option value="">Choose a course</option>
+                {% for course_num in courses.keys() %}
+                <option value="{{ course_num }}">Course {{ course_num }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <p class="text-amber-700 bg-amber-100 p-3 rounded">
+                No courses found yet. Upload a CSV first.
+            </p>
+            {% endif %}
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold mb-3">Select Chapter(s)</h2>
+            {% if courses %}
+            {% for course_num, chapters in courses.items() %}
+            <div class="course-chapters hidden" data-course="{{ course_num }}">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {% for chapter in chapters %}
+                    <label class="flex items-center gap-3 border rounded-lg p-3 bg-slate-50 hover:bg-slate-100">
+                        <input type="checkbox" name="chapters" value="{{ chapter }}" class="h-4 w-4">
+                        <span>{{ chapter }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div>
+            <label class="flex items-center gap-3">
+                <input type="checkbox" name="randomize" value="true" class="h-4 w-4">
+                <span class="font-medium">Randomize questions</span>
+            </label>
+        </div>
+
+        <div>
+            <button
+                type="submit"
+                class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700"
+            >
+                Start Quiz
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const courseSelect = document.getElementById("course-select");
+    const chapterGroups = document.querySelectorAll(".course-chapters");
+
+    function updateChapters() {
+        const selected = courseSelect ? courseSelect.value : "";
+
+        chapterGroups.forEach(group => {
+            const match = group.dataset.course === selected;
+            if (match) {
+                group.classList.remove("hidden");
+            } else {
+                group.classList.add("hidden");
+                // Optional: Uncheck hidden checkboxes so they aren't submitted
+                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => cb.checked = false);
+            }
+        });
+    }
+
+    if (courseSelect) {
+        courseSelect.addEventListener("change", updateChapters);
+        updateChapters(); // initialize on load
+    }
+</script>
+{% endblock %}

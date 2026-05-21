@@ -40,6 +40,7 @@ def get_questions(
             },
             "correct_answer": q.correct_answer,
             "explanation": q.explanation,
+            "explaination": q.explaination,
         })
 
     if randomize:

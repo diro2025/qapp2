@@ -7,16 +7,56 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen">
+<body class="min-h-screen bg-slate-100 text-slate-900">
     <nav class="bg-blue-700 text-white">
         <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-6">
-            <a href="/" class="text-xl font-bold">Quiz App</a>
-            <a href="/" class="hover:underline">Home</a>
-            <a href="/upload" class="hover:underline">Upload CSV</a>
+            <div class="flex items-center gap-6">
+                <a href="/" class="text-xl font-bold">Quiz App</a>
+                <a href="/" class="hover:underline">Home</a>
+                <a href="/upload" class="hover:underline">Upload CSV</a>
+            </div>
         </div>
     </nav>
     <main class="max-w-5xl mx-auto p-6">
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        (function() {
+            const button = document.getElementById('theme-toggle-button');
+            const status = document.getElementById('theme-status');
+            if (!button) {
+                return;
+            }
+
+            const updateText = (dark) => {
+                button.textContent = dark ? 'Light Mode' : 'Dark Mode';
+                if (status) {
+                    status.textContent = `Theme: ${dark ? 'dark' : 'light'}`;
+                }
+            };
+
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const isDark = currentTheme === 'dark';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateText(isDark);
+
+            button.addEventListener('click', () => {
+                const root = document.documentElement;
+                const nowDark = !root.classList.contains('dark');
+                if (nowDark) {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+                localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+                updateText(nowDark);
+            });
+        })();
+    </script>
 </body>
 </html>
